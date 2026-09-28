@@ -94,9 +94,12 @@
   }
   tr.placeholder td.col-name input, tr.extra td.col-name input, tr.extra td.col-code input {
     width: 100%; border: none; background: transparent; font-style: italic; color: #555;
-    font-size: 11px; font-family: inherit; padding: 2px 0;
+    font-size: 11px; font-family: inherit; padding: 2px 0; margin: 0;
+    -webkit-appearance: none; appearance: none; outline: none; box-shadow: none;
+    font-weight: inherit; line-height: inherit; -webkit-text-fill-color: currentColor;
   }
-  tr.extra td.col-name input, tr.extra td.col-code input { font-style: normal; color: #222; }
+  /* 새로 입력한 품목명은 기존 품목명과 완전히 같은 굵기/색상으로 표시 */
+  tr.extra td.col-name input, tr.extra td.col-code input { font-style: normal; color: inherit; font-weight: normal; }
   /* 새로 추가한 잡지 제목도 기존 잡지 제목과 완전히 같은 색상으로 유지 */
   tr.extra.magazine-row .mag-extra-title.awake-title {
     border-color:#c00000 !important; background:#fff2f2 !important;
