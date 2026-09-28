@@ -52,7 +52,9 @@
     border-radius: 6px; background: #fff; cursor: pointer;
   }
   .toolbar button:hover { background: #eee; }
-  .table-wrap { background: #fff; padding: 10px; overflow-x: auto; border: 1px solid #999; }
+  /* 표 영역 자체를 스크롤 상자로 만들어야 머리글(9월/10월 등, 원재고·입고·현재고·출고)이
+     스크롤해도 화면 위에 계속 고정되어 보입니다. (전체 페이지 스크롤에는 sticky가 붙지 않음) */
+  .table-wrap { background: #fff; padding: 10px; overflow-x: auto; overflow-y: auto; max-height: 75vh; border: 1px solid #999; }
   table { border-collapse: collapse; width: 100%; min-width: 1500px; font-size: 11px; }
   th, td { border: 1px solid #999; padding: 3px 4px; text-align: center; white-space: nowrap; }
   thead th { background: #e6e6e6; font-weight: bold; }
@@ -212,7 +214,7 @@
     body { background: #fff; margin: 0; }
     .toolbar, .cycle-box { display: none; }
     tr.add-row-btn { display: none; }
-    .table-wrap { border: none; padding: 0; overflow: visible; }
+    .table-wrap { border: none; padding: 0; overflow: visible; max-height: none; }
     table {
       font-size: 7px;
       min-width: 0;
