@@ -520,6 +520,9 @@ function saveExtra(list) {
 }
 
 let extraIdCounter = 0;
+// 사용자가 직접 추가한 잡지(깨어라/파수대) 중 "수정 중"으로 표시를 클릭해 다시 편집 중인 항목의 id 모음.
+// 연도/호가 다 채워지면 기본적으로는 기존 항목처럼 고정된 글자로 보이고, 이 안에 들어있는 id만 편집 칸이 보입니다.
+const magEditIds = new Set();
 
 function addExtraRow(afterIndex) {
   const list = loadExtra();
@@ -819,28 +822,58 @@ function buildTable() {
     const delBtn=document.createElement('button');
     delBtn.textContent='✕'; delBtn.title='이 잡지 삭제'; delBtn.style.marginLeft='4px';
     delBtn.onclick=()=>removeExtraRow(ex.id);
-    // 잡지 제목을 다 입력하면(빈칸이 아니면) 실수로 지우지 않도록 X 표시를 숨깁니다.
-    function updateDelBtnVisibility() { delBtn.style.display = titleInput.value.trim() ? 'none' : ''; }
-    updateDelBtnVisibility();
 
+    // 연도·호가 다 채워지면, 기존에 이미 등록되어 있던 잡지들과 완전히 같은 모양(고정 글자 + 제목 칸)으로
+    // 보이게 하고, 선택 상자/연도/호/삭제 칸은 숨깁니다. 표시된 글자를 탭하면 다시 수정할 수 있습니다.
+    const baseSpan = document.createElement('span');
+    const displayLine = document.createElement('div');
+    displayLine.style.cursor = 'pointer';
+    displayLine.title = '탭하면 종류·연도·호를 다시 수정할 수 있습니다';
+    displayLine.appendChild(baseSpan);
+    displayLine.addEventListener('click', () => { magEditIds.add(ex.id); buildTable(); });
+
+    function isEntryComplete() {
+      return Boolean(String(yearInput.value||'').trim() && String(issueInput.value||'').trim() && titleInput.value.trim());
+    }
+    function refreshDisplayLabel() {
+      const y = String(yearInput.value || '').trim();
+      const i = String(issueInput.value || '').trim();
+      baseSpan.textContent = typeSel.value + (y ? ' ' + y + '년' : '') + (i ? ' ' + i + '호' : '');
+    }
+    refreshDisplayLabel();
+
+    function commitAndCollapse() {
+      magEditIds.delete(ex.id);
+      buildTable();
+    }
     function saveField(key, value) {
       const s=loadSaved();
       if (value === '') delete s[key]; else s[key]=value;
       saveSaved(s);
     }
-    typeSel.addEventListener('change',()=>{saveField(typeKey,typeSel.value); applyMagazineColor(); buildTable();});
-    yearInput.addEventListener('input',()=>{yearInput.value=yearInput.value.replace(/\D/g,'').slice(0,4); saveField(yearKey,yearInput.value); applyMagazineColor();});
-    yearInput.addEventListener('change',()=>buildTable());
-    issueInput.addEventListener('input',()=>{saveField(issueKey,issueInput.value); applyMagazineColor();});
-    issueInput.addEventListener('change',()=>buildTable());
-    titleInput.addEventListener('input',()=>{saveField(titleKey,titleInput.value); updateDelBtnVisibility();});
+    typeSel.addEventListener('change',()=>{saveField(typeKey,typeSel.value); applyMagazineColor(); refreshDisplayLabel(); commitAndCollapse();});
+    yearInput.addEventListener('input',()=>{yearInput.value=yearInput.value.replace(/\D/g,'').slice(0,4); saveField(yearKey,yearInput.value); applyMagazineColor(); refreshDisplayLabel();});
+    yearInput.addEventListener('change',commitAndCollapse);
+    issueInput.addEventListener('input',()=>{saveField(issueKey,issueInput.value); applyMagazineColor(); refreshDisplayLabel();});
+    issueInput.addEventListener('change',commitAndCollapse);
+    titleInput.addEventListener('input',()=>{saveField(titleKey,titleInput.value);});
+    titleInput.addEventListener('change',commitAndCollapse);
 
+    // 조립: 우선 편집 칸(select/연도/호/삭제) 기준 위치에 abbr을 넣어 두고,
+    // 완료된 상태라면 마지막에 표시용 줄로 옮깁니다.
     metaLine.append(typeSel, yearInput, yearText, issueInput, issueText, abbrSpan, delBtn);
-    wrap.append(metaLine, titleInput);
+    wrap.append(displayLine, metaLine, titleInput);
     tdName.appendChild(wrap);
     tr.appendChild(tdName);
     makeDataInputs(tr, 'extra-' + ex.id, null);
     tbody.appendChild(tr);
+
+    const showEdit = magEditIds.has(ex.id) || !isEntryComplete();
+    metaLine.style.display = showEdit ? '' : 'none';
+    displayLine.style.display = showEdit ? 'none' : '';
+    if (!showEdit) { displayLine.appendChild(abbrSpan); }
+    // 편집 칸이 보이는 동안에는 이름이 비어 있을 때만 X(삭제) 표시
+    delBtn.style.display = isEntryComplete() ? 'none' : '';
   }
 
   data.forEach((row, rIdx) => {
