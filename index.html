@@ -1051,7 +1051,9 @@ function exportExcel() {
     const cells = Array.from(tr.querySelectorAll('td'));
     if (cells.length < 2) return;
     const codeInput = cells[0].querySelector('input');
-    const nameInput = cells[1].querySelector('input');
+    // 잡지 칸(mag-title/mag-extra-title/mag-year/mag-issue)은 아래에서 별도로 조합하므로,
+    // 여기서는 순수한 "품목명" 입력칸만 골라야 제목이 두 번 겹쳐 붙는 것을 막을 수 있다.
+    const nameInput = cells[1].querySelector('input:not(.mag-title):not(.mag-extra-title):not(.mag-year):not(.mag-issue)');
     const code = codeInput ? codeInput.value.trim() : cells[0].textContent.trim();
     let name = nameInput ? nameInput.value.trim() : (cells[1].childNodes[0]?.textContent?.trim() || cells[1].textContent.trim());
     const magTitleInput = cells[1].querySelector('.mag-title');
