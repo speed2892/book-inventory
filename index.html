@@ -100,6 +100,14 @@
   /* 새로 입력한 품목명은 기존 품목명과 완전히 같은 굵기/색상으로 표시 */
   tr.extra td.col-name input, tr.extra td.col-code input { font-style: normal; color: inherit; font-weight: normal; }
   tr.extra td.col-name button { font-size: 11px; }
+  /* 재목을 직접 수정할 수 있는 고정 품목: 평소엔 일반 글자처럼 보이고 클릭하면 수정 가능 */
+  .item-name-input {
+    width: 100%; border: none; background: transparent; font-style: normal; color: inherit;
+    font-size: inherit; font-family: inherit; padding: 2px 0; margin: 0;
+    -webkit-appearance: none; appearance: none; outline: none; box-shadow: none;
+    font-weight: inherit; line-height: inherit; -webkit-text-fill-color: currentColor;
+  }
+  .item-name-input:focus { background: #fff8d0; outline: 1px solid #f0a500; }
   .data-cell input {
     width: 46px; border: none; background: #d9d9d9; text-align: center; font-size: 11px; padding: 2px 0;
   }
@@ -315,7 +323,7 @@ const data = [
   {t:'I', code:'5422', name:'하느님의 왕국이 통치한다!', abbr:'kr'},
   {t:'I', code:'5427', name:'성경 이야기', abbr:'lfb'},
   {t:'I', code:'5445', name:'행복한 삶을 영원히 누리십시오! 서적', abbr:'lff'},
-  {t:'I', code:'5415', name:'선한 목자', abbr:'lr'},
+  {t:'I', code:'5415', name:'선생님', abbr:'lr', editableName:true},
   {t:'I', code:'5343', name:'사랑 안에 머물러 있으십시오', abbr:'lvs'},
   {t:'I', code:'', name:'조직', abbr:'od'},
   {t:'I', code:'5435', name:'순결한 숭배', abbr:'rr'},
@@ -765,6 +773,23 @@ function buildTable() {
         saveSaved(s);
       });
       tdName.appendChild(titleInput);
+    } else if (row.editableName) {
+      const nameKey = 'itemName-' + rIdx;
+      const itemNameInput = document.createElement('input');
+      itemNameInput.className = 'item-name-input';
+      itemNameInput.value = (savedAll[nameKey] !== undefined) ? savedAll[nameKey] : row.name;
+      itemNameInput.addEventListener('input', () => {
+        const s = loadSaved();
+        if (itemNameInput.value === '') delete s[nameKey]; else s[nameKey] = itemNameInput.value;
+        saveSaved(s);
+      });
+      tdName.appendChild(itemNameInput);
+      if (row.abbr) {
+        const ab = document.createElement('span');
+        ab.className = 'abbr';
+        ab.textContent = row.abbr;
+        tdName.appendChild(ab);
+      }
     } else {
       tdName.innerHTML = row.name + (row.abbr ? '<span class="abbr">' + row.abbr + '</span>' : '');
     }
