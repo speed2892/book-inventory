@@ -2,7 +2,7 @@
   "name": "재고 조사 (경주동부 회중)",
   "short_name": "재고 조사",
   "description": "S-28-KO 양식 기준 서적/잡지 재고 조사 목록 - 경주동부 회중",
-  "start_url": "./서적재고조사_휴대폰_태블릿최적화.html",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
