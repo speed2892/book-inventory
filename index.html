@@ -1136,9 +1136,11 @@ function exportExcel() {
     const nameInput = cells[1].querySelector('input:not(.mag-title):not(.mag-extra-title):not(.mag-year):not(.mag-issue)');
     const code = codeInput ? codeInput.value.trim() : cells[0].textContent.trim();
     let name = nameInput ? nameInput.value.trim() : (cells[1].childNodes[0]?.textContent?.trim() || cells[1].textContent.trim());
+    // 잡지 항목은 엑셀에서도 화면과 똑같이 "연도/호"가 위쪽 줄, 기사 제목이 아래쪽 줄에
+    // 오도록 같은 칸 안에서 줄바꿈으로 표시한다 (줄바꿈 표시를 위해 wrapText도 함께 적용됨).
     const magTitleInput = cells[1].querySelector('.mag-title');
     if (magTitleInput && magTitleInput.value.trim()) {
-      name += ' — ' + magTitleInput.value.trim();
+      name += '\n' + magTitleInput.value.trim();
     }
     const magTypeSel = cells[1].querySelector('.mag-extra-controls select');
     const magYearInput = cells[1].querySelector('.mag-year');
@@ -1148,7 +1150,7 @@ function exportExcel() {
       const y = magYearInput?.value.trim() || '';
       const i = magIssueInput?.value.trim() || '';
       name = magTypeSel.value + (y ? ' ' + y + '년' : '') + (i ? ' 제' + i + '호' : '');
-      if (magExtraTitle && magExtraTitle.value.trim()) name += ' — ' + magExtraTitle.value.trim();
+      if (magExtraTitle && magExtraTitle.value.trim()) name += '\n' + magExtraTitle.value.trim();
     }
 
     const rowArr = [code, name];
