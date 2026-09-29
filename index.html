@@ -972,6 +972,23 @@ function buildTable() {
           saveSaved(s);
         });
         tdName.appendChild(nameInput);
+      } else if (row.editableName) {
+        const itemNameKey = 'itemName-' + rIdx;
+        const itemNameInput = document.createElement('input');
+        itemNameInput.className = 'item-name-input';
+        itemNameInput.value = (savedAll[itemNameKey] !== undefined) ? savedAll[itemNameKey] : row.name;
+        itemNameInput.addEventListener('input', () => {
+          const s = loadSaved();
+          if (itemNameInput.value === '') delete s[itemNameKey]; else s[itemNameKey] = itemNameInput.value;
+          saveSaved(s);
+        });
+        tdName.appendChild(itemNameInput);
+        if (row.abbr) {
+          const ab = document.createElement('span');
+          ab.className = 'abbr';
+          ab.textContent = row.abbr;
+          tdName.appendChild(ab);
+        }
       } else {
         tdName.innerHTML = row.name + (row.abbr ? '<span class="abbr">' + row.abbr + '</span>' : '');
       }
