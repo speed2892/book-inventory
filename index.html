@@ -1147,7 +1147,7 @@ function exportExcel() {
       const abbrInputEl = cells[1].querySelector('.abbr-input');
       const abbrSpanEl = cells[1].querySelector('span.abbr');
       const abbrVal = abbrInputEl ? abbrInputEl.value.trim() : (abbrSpanEl ? abbrSpanEl.textContent.trim() : '');
-      if (abbrVal) name += '\n' + abbrVal;
+      if (abbrVal) name += ' ' + abbrVal;
     }
     const magYearInput = cells[1].querySelector('.mag-year');
     const magIssueInput = cells[1].querySelector('.mag-issue');
