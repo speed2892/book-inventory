@@ -1131,18 +1131,24 @@ function exportExcel() {
     const cells = Array.from(tr.querySelectorAll('td'));
     if (cells.length < 2) return;
     const codeInput = cells[0].querySelector('input');
-    // 잡지 칸(mag-title/mag-extra-title/mag-year/mag-issue)은 아래에서 별도로 조합하므로,
-    // 여기서는 순수한 "품목명" 입력칸만 골라야 제목이 두 번 겹쳐 붙는 것을 막을 수 있다.
-    const nameInput = cells[1].querySelector('input:not(.mag-title):not(.mag-extra-title):not(.mag-year):not(.mag-issue)');
+    // 잡지 칸(mag-title/mag-extra-title/mag-year/mag-issue)과 약자 칸(abbr-input)은 아래에서
+    // 별도로 조합하므로, 여기서는 순수한 "품목명" 입력칸만 골라야 제목이 두 번 겹쳐 붙는 것을 막을 수 있다.
+    const nameInput = cells[1].querySelector('input:not(.mag-title):not(.mag-extra-title):not(.mag-year):not(.mag-issue):not(.abbr-input)');
     const code = codeInput ? codeInput.value.trim() : cells[0].textContent.trim();
     let name = nameInput ? nameInput.value.trim() : (cells[1].childNodes[0]?.textContent?.trim() || cells[1].textContent.trim());
     // 잡지 항목은 엑셀에서도 화면과 똑같이 "연도/호"가 위쪽 줄, 기사 제목이 아래쪽 줄에
     // 오도록 같은 칸 안에서 줄바꿈으로 표시한다 (줄바꿈 표시를 위해 wrapText도 함께 적용됨).
     const magTitleInput = cells[1].querySelector('.mag-title');
+    const magTypeSel = cells[1].querySelector('.mag-extra-controls select');
     if (magTitleInput && magTitleInput.value.trim()) {
       name += '\n' + magTitleInput.value.trim();
+    } else if (!magTypeSel) {
+      // 잡지가 아닌 일반 품목: 화면과 똑같이 약자(영문 줄임말)도 재목 아래 줄에 함께 표시
+      const abbrInputEl = cells[1].querySelector('.abbr-input');
+      const abbrSpanEl = cells[1].querySelector('span.abbr');
+      const abbrVal = abbrInputEl ? abbrInputEl.value.trim() : (abbrSpanEl ? abbrSpanEl.textContent.trim() : '');
+      if (abbrVal) name += '\n' + abbrVal;
     }
-    const magTypeSel = cells[1].querySelector('.mag-extra-controls select');
     const magYearInput = cells[1].querySelector('.mag-year');
     const magIssueInput = cells[1].querySelector('.mag-issue');
     const magExtraTitle = cells[1].querySelector('.mag-extra-title');
