@@ -110,6 +110,12 @@
     font-weight: bold;
   }
   .data-cell input.computed:focus { outline: none; }
+  /* 현재고 칸은 한눈에 보이도록 항상 빨간색 글씨로 표시 */
+  .data-cell input.current-stock {
+    color: #c0392b;
+    font-weight: bold;
+  }
+  .data-cell input.current-stock:focus { color: #c0392b; }
   tr.section .data-cell, tr.section td { background: #d9d9d9; }
   tr.add-row-btn td { background: #f5f9ff; padding: 4px; }
   tr.add-row-btn button {
@@ -596,9 +602,12 @@ function makeDataInputs(tr, keyPrefix, defaults) {
     const input = document.createElement('input');
     input.type = 'text';
     const isOutput = (c >= 3 && (c - 3) % 3 === 0); // 출고 칸: 3,6,9,12,15,18
+    const isCurrent = (c >= 2 && (c - 2) % 3 === 0); // 현재고 칸: 2,5,8,11,14,17
     const key = keyPrefix + '-' + c;
     const savedVal = saved[key];
     input.value = (savedVal !== undefined) ? savedVal : (defaults && defaults[c] !== undefined ? defaults[c] : '');
+
+    if (isCurrent) input.classList.add('current-stock');
 
     if (isOutput) {
       input.readOnly = true;
@@ -1103,7 +1112,7 @@ function exportExcel() {
       ws['!merges'].push({ s: { r: rIdx, c: 0 }, e: { r: rIdx, c: 20 } });
     }
   });
-  ws['!cols'] = [{ wch: 10 }, { wch: 38 }].concat(Array(19).fill({ wch: 10 }));
+  ws['!cols'] = [{ wch: 10 }, { wch: 60 }].concat(Array(19).fill({ wch: 10 }));
   ws['!autofilter'] = { ref: 'A4:U' + aoa.length };
 
   // 상세표 색상/테두리/정렬
@@ -1112,12 +1121,19 @@ function exportExcel() {
     left:{style:'thin',color:{rgb:'B7C9DC'}}, right:{style:'thin',color:{rgb:'B7C9DC'}}
   };
   const center = {horizontal:'center', vertical:'center'};
-  const left = {horizontal:'left', vertical:'center'};
+  // 문헌(제목) 칸: 글이 길어도(배부용 잡지 제목 등) 잘리지 않고 줄바꿈되어 전부 보이도록 wrapText 적용
+  const left = {horizontal:'left', vertical:'center', wrapText:true};
+  const currentCols = [4, 7, 10, 13, 16, 19]; // 현재고 칸 (열 인덱스, 품목번호/문헌 2칸 포함)
   for (let r = 0; r < aoa.length; r++) {
     for (let c = 0; c < 21; c++) {
       const addr = XLSX.utils.encode_cell({r,c});
       if (!ws[addr]) continue;
-      ws[addr].s = { border: thinBorder, alignment: c === 1 ? left : center };
+      const isCurrentCell = r >= 4 && currentCols.includes(c);
+      ws[addr].s = {
+        border: thinBorder,
+        alignment: c === 1 ? left : center,
+        font: isCurrentCell ? { color: { rgb: 'C00000' }, bold: true } : undefined
+      };
     }
   }
   for (let c = 0; c < 21; c++) {
@@ -1145,7 +1161,7 @@ function exportExcel() {
   const sws = XLSX.utils.aoa_to_sheet(summaryAoa);
   sws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }];
   sws['!cols'] = [
-    { wch: 25 }, { wch: 10 }, { wch: 42 }, { wch: 12 },
+    { wch: 25 }, { wch: 10 }, { wch: 60 }, { wch: 12 },
     { wch: 12 }, { wch: 14 }, { wch: 14 }
   ];
   if (summaryRows.length) sws['!autofilter'] = { ref: 'A2:G' + (summaryRows.length + 2) };
@@ -1158,7 +1174,7 @@ function exportExcel() {
       let fill = 'FFFFFF', font = {color:{rgb:'222222'}};
       if (r === 0) { fill='1F4E78'; font={bold:true,color:{rgb:'FFFFFF'},sz:14}; }
       else if (r === 1) { fill='5B9BD5'; font={bold:true,color:{rgb:'FFFFFF'}}; }
-      else if (c === 4) { fill='FFF2CC'; font={bold:true,color:{rgb:'7F6000'}}; }
+      else if (c === 4) { fill='FFF2CC'; font={bold:true,color:{rgb:'C00000'}}; }
       else if (r % 2 === 0) { fill='F3F8FC'; }
       sws[addr].s={fill:{fgColor:{rgb:fill}},font,alignment:c===2?left:center,border:thinBorder};
     }
